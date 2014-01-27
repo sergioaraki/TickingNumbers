@@ -1,0 +1,50 @@
+<html>
+<head>
+<link href="tick.css" type="text/css" rel="stylesheet" media="screen">
+</head>
+<body>
+<p id="value" class="tick tick-flip">0</p>
+</body>
+<script>
+	window.onload = function(){                      
+		navigator.cascades.postMessage("ready");
+	};
+</script>
+<script src="libs/jquery.min.js" type="text/javascript"></script>
+<script src="libs/jquery.easing.js" type="text/javascript"></script>
+<script src="tick.js" type="text/javascript"></script>
+<script>
+	var number;
+	navigator.cascades.onmessage = function onmessage(message) {
+		var partsArray = message.split(';');
+		if (message.indexOf('init') === 0) {
+			var fromValue = partsArray[1];
+			var delay = partsArray[2];
+			var incremental = parseInt(partsArray[3]);
+			var autostart = (partsArray[4] === 'true');
+			$("#value").text(fromValue);
+			number = $("#value").ticker(
+			{
+			  delay       : delay,
+			  separators  : false,
+			  incremental : incremental,
+			  autostart : autostart
+			});
+			number.onTick = function(){                     
+				navigator.cascades.postMessage("value;"+number[0].value);
+			};
+		}
+		else if (message.indexOf('start') === 0) {
+			number[0].start();
+		}
+		else if (message.indexOf('stop') === 0) {
+			if (partsArray.length==1)
+				number[0].stop();
+			else if (partsArray.length==2) {
+				number[0].stop();
+				navigator.cascades.postMessage("value;"+number[0].value);
+			}
+		}
+    };
+</script>
+</html>
